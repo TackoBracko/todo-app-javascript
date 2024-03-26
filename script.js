@@ -5,59 +5,121 @@ const activeTasksList = document.querySelector('.activeTasks')
 const completedTasksList = document.querySelector('.completedTasks')
 const inputField = document.querySelector('.taskInput')
 const submitBtn = document.querySelector('.submitBtn')
-const clearCompletedBtn = document.querySelector('.clearAll')
+const clearAllBtn = document.querySelector('.clearAll')
 const activeCountSpan = document.querySelector('.activeCount')
 const doneCountSpan = document.querySelector('.doneCount')
 
-/*activeTasksList.addEventListener('click', (e) => {
-    if (e.target.id && e.target.tagName === 'BUTTON') {
-      const button = document.getElementById(e.target.id)
-      const parent = button.parentElement
-      parent.remove()
-    }
-})*/
+//delete task and event listener
 
-let todoList = []
+const removeTask = (element) => {
+    element.parentElement.remove()
+
+    const locStorage = getFromLocalStorage()
+    const newLocalStorage = locStorage.filter(task => task.id !== Number(element.dataset.id))
+
+    localStorage.setItem('todoItem', JSON.stringify(newLocalStorage))
+}
+
+activeTasksList.addEventListener('click', (e) => {
+    if (e.target.dataset.id && e.target.tagName === 'BUTTON') {
+        removeTask(e.target)
+        
+        const currentCount = activeCountSpan.textContent
+        activeCountSpan.textContent = Number(currentCount) - 1
+    }
+})
+
+completedTasksList.addEventListener('click', (e) => {
+    if (e.target.dataset.id && e.target.tagName === 'BUTTON') {
+        removeTask(e.target)
+        
+        const currentCount = doneCountSpan.textContent
+        doneCountSpan.textContent = Number(currentCount) - 1
+    }
+})
+
+//clear tasks
+
+const clearActiveTasks = () => {
+    activeTasksList.innerHTML = ''
+    activeCountSpan.textContent = 0
+}
+
+clearAllBtn.addEventListener('click', clearActiveTasks)
+
+//toggle status
+
+const toggleTodoStatus = (e) => {
+    if (e.target.dataset.id && e.target.tagName === 'INPUT') {
+        const li = e.target.parentElement
+        const status = e.target.checked ? 'done' : 'active'
+        
+        if (status === 'done') {
+            completedTasksList.appendChild(li)
+
+            const doneCount = doneCountSpan.textContent
+            doneCountSpan.textContent = Number(doneCount) + 1
+
+            const activeCount = activeCountSpan.textContent
+            activeCountSpan.textContent = Number(activeCount) - 1
+
+        } else if (status === 'active') {
+            activeTasksList.appendChild(li)
+
+            const activeCount = activeCountSpan.textContent
+            activeCountSpan.textContent = Number(activeCount) + 1  
+
+            const doneCount = doneCountSpan.textContent
+            doneCountSpan.textContent = Number(doneCount) - 1
+        }
+    }  
+}
+
+//function
 
 const addTodoTask = () => {
     if (inputField.value.trim() !== '') {
         const task = {
             title: inputField.value,
-            id: todoList.length + 1,
+            id: Math.random(),
             status: 'active'
         }
         
-        todoList.push(task)
-        console.log(todoList)
+        console.log(task)
         inputField.value = ''
         
         const newTask = createLiElement(task)
         activeTasksList.appendChild(newTask)
-        saveToLocalStorage()
+        
+        let locStorage = getFromLocalStorage()
+        if(!locStorage) {
+            locStorage = []
+        }
+        locStorage.push(task)
+        localStorage.setItem('todoItem', JSON.stringify(locStorage))
+
+        const currentCount = activeCountSpan.textContent
+        activeCountSpan.textContent = Number(currentCount) + 1
     }
 }
 
 const createLiElement = (task) => {
     const newTask = document.createElement('li')
     newTask.innerText = task.title
-    newTask.dataset.id = task.id
-
+    
     const checkBox = document.createElement('input')
     checkBox.type = 'checkbox'
     checkBox.classList.add('checkbox')
     checkBox.checked = task.status === 'done'
-    checkBox.addEventListener('change', () => toggleTodoStatus(task.id))
-
+    checkBox.dataset.id = task.id
+    
     newTask.appendChild(checkBox)
-
+    
     const deleteBtn = document.createElement('button')
     deleteBtn.textContent = 'Delete'
     deleteBtn.className = 'deleteBtn'
-    deleteBtn.addEventListener('click', () => {
-        todoList = todoList.filter((item) => item.id !== task.id)
-        saveToLocalStorage()
-    })
-
+    deleteBtn.dataset.id = task.id
+    
     newTask.appendChild(deleteBtn)
 
     return newTask
@@ -70,7 +132,12 @@ const renderTodoList = () => {
     let activeCount = 0
     let doneCount = 0
 
-    todoList.map((task) => {
+    let locStorage = getFromLocalStorage();
+    if (!locStorage) {
+        locStorage = [];
+    }
+
+    locStorage.map((task) => {
         const newTask = createLiElement(task)
 
         if (task.status === 'done') {
@@ -86,32 +153,9 @@ const renderTodoList = () => {
     doneCountSpan.textContent = doneCount
 }
 
-const toggleTodoStatus = (id) => {
-    todoList.forEach((task) => {
-        if (task.id === id) {
-            task.status === 'active' ? (task.status = 'done') : (task.status = 'active')
-        }
-    })
-    saveToLocalStorage()
-    renderTodoList()
-}
-
-const removeTask = (e) => {
-    if (e.target.className === 'deleteBtn') {
-        const parent = e.target.parentElement
-        parent.remove()
-        saveToLocalStorage()
-    }
-}
-
-/*const deleteTask = (id) => {
-    todoList = todoList.filter(item => item.id !== id)
-    saveToLocalStorage()
-}*/
-
 submitBtn.addEventListener('click', addTodoTask)
-activeTasksList.addEventListener('click', removeTask)
-completedTasksList.addEventListener('click', removeTask)
+activeTasksList.addEventListener('change', toggleTodoStatus);
+completedTasksList.addEventListener('change', toggleTodoStatus);
 
 inputField.addEventListener('keypress', (e) => {
     if (e.keyCode === 13) {
@@ -119,16 +163,12 @@ inputField.addEventListener('keypress', (e) => {
     }
 })
   
-//localStorage
-
-const saveToLocalStorage = () => {
-    localStorage.setItem('todoItem', JSON.stringify(todoList))
-}
+//LOCAL STORAGE
 
 const getFromLocalStorage = () => {
     const storedTodoList = localStorage.getItem('todoItem')
     if (storedTodoList) {
-        todoList = JSON.parse(storedTodoList)
+        return JSON.parse(storedTodoList)
     }
 }
 
@@ -136,4 +176,3 @@ window.onload = () => {
     getFromLocalStorage()
     renderTodoList()
 }
-
