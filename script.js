@@ -5,9 +5,9 @@ const activeTasksList = document.querySelector('.activeTasks')
 const completedTasksList = document.querySelector('.completedTasks')
 const inputField = document.querySelector('.taskInput')
 const submitBtn = document.querySelector('.submitBtn')
-const clearAllBtn = document.querySelector('.clearAll')
 const activeCountSpan = document.querySelector('.activeCount')
 const doneCountSpan = document.querySelector('.doneCount')
+const clearAllWrapper = document.querySelector('.clear-all-active-wrapper')
 
 //delete task and event listener
 
@@ -18,6 +18,8 @@ const removeTask = (element) => {
     const newLocalStorage = locStorage.filter(task => task.id !== Number(element.dataset.id))
 
     localStorage.setItem('todoItem', JSON.stringify(newLocalStorage))
+
+    checkClearBtn()    
 }
 
 activeTasksList.addEventListener('click', (e) => {
@@ -40,12 +42,27 @@ completedTasksList.addEventListener('click', (e) => {
 
 //clear tasks
 
+const checkFirstTask = () => {
+    if (activeTasksList.children.length === 1) { 
+        const buttonToClear = document.createElement('button');
+        buttonToClear.innerText = 'Clear All'
+        buttonToClear.className = 'clearAll'
+        buttonToClear.addEventListener('click', clearActiveTasks)
+        clearAllWrapper.appendChild(buttonToClear)
+    }
+}
+
 const clearActiveTasks = () => {
     activeTasksList.innerHTML = ''
     activeCountSpan.textContent = 0
+    clearAllWrapper.innerHTML = ''  
 }
 
-clearAllBtn.addEventListener('click', clearActiveTasks)
+const checkClearBtn = () => {
+    if (activeTasksList.children.length === 0) {
+        clearAllWrapper.innerHTML = '';
+    }
+}
 
 //toggle status
 
@@ -72,6 +89,21 @@ const toggleTodoStatus = (e) => {
             const doneCount = doneCountSpan.textContent
             doneCountSpan.textContent = Number(doneCount) - 1
         }
+
+        const locStorage = getFromLocalStorage()
+
+        if(!locStorage) {
+            locStorage = []
+        }
+
+        const newLocalStorage = locStorage.map(task => {
+            if (task.id === Number(e.target.dataset.id)) {
+                task.status = status
+                return task
+            }
+            return task 
+        })
+        localStorage.setItem('todoItem', JSON.stringify(newLocalStorage))
     }  
 }
 
@@ -97,10 +129,13 @@ const addTodoTask = () => {
         }
         locStorage.push(task)
         localStorage.setItem('todoItem', JSON.stringify(locStorage))
-
+        
+        
         const currentCount = activeCountSpan.textContent
         activeCountSpan.textContent = Number(currentCount) + 1
     }
+
+    checkFirstTask()
 }
 
 const createLiElement = (task) => {
