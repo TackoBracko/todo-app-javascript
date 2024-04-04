@@ -7,7 +7,8 @@ const inputField = document.querySelector('.taskInput')
 const submitBtn = document.querySelector('.submitBtn')
 const activeCountSpan = document.querySelector('.activeCount')
 const doneCountSpan = document.querySelector('.doneCount')
-const clearAllWrapper = document.querySelector('.clear-all-active-wrapper')
+const clearAllActiveWrapper = document.querySelector('.clear-all-active-wrapper')
+const clearAllCompletedWrapper = document.querySelector('.clear-all-completed-wrapper')
 
 //delete task and event listener
 
@@ -19,7 +20,8 @@ const removeTask = (element) => {
 
     localStorage.setItem('todoItem', JSON.stringify(newLocalStorage))
 
-    checkClearBtn()    
+    checkClearAllActiveBtn()
+    checkClearAllDoneBtn()  
 }
 
 activeTasksList.addEventListener('click', (e) => {
@@ -41,26 +43,51 @@ completedTasksList.addEventListener('click', (e) => {
 })
 
 //clear tasks
+//activetaskslist
 
 const checkFirstTask = () => {
     if (activeTasksList.children.length === 1) { 
-        const buttonToClear = document.createElement('button');
-        buttonToClear.innerText = 'Clear All'
-        buttonToClear.className = 'clearAll'
-        buttonToClear.addEventListener('click', clearActiveTasks)
-        clearAllWrapper.appendChild(buttonToClear)
+        const clearAllActiveTaskBtn = document.createElement('button');
+        clearAllActiveTaskBtn.innerText = 'Clear All'
+        clearAllActiveTaskBtn.className = 'clearAll'
+        clearAllActiveTaskBtn.addEventListener('click', clearAllActiveTasks)
+        clearAllActiveWrapper.appendChild(clearAllActiveTaskBtn)
+    } 
+}
+
+const clearAllActiveTasks = () => {
+    activeTasksList.innerHTML = ''
+    activeCountSpan.textContent = 0
+    clearAllActiveWrapper.innerHTML = ''  
+}
+
+const checkClearAllActiveBtn = () => {
+    if (activeTasksList.children.length === 0) {
+        clearAllActiveWrapper.innerHTML = '';
     }
 }
 
-const clearActiveTasks = () => {
-    activeTasksList.innerHTML = ''
-    activeCountSpan.textContent = 0
-    clearAllWrapper.innerHTML = ''  
+//completedtaskslist
+
+const checkFirstDoneTask = () => {
+    if (completedTasksList.children.length === 1 ) { 
+        const clearAllDoneTaskBtn = document.createElement('button');
+        clearAllDoneTaskBtn.innerText = 'Clear All'
+        clearAllDoneTaskBtn.className = 'clearAll'
+        clearAllDoneTaskBtn.addEventListener('click', clearAllDoneTasks)
+        clearAllCompletedWrapper.appendChild(clearAllDoneTaskBtn)
+    }
 }
 
-const checkClearBtn = () => {
-    if (activeTasksList.children.length === 0) {
-        clearAllWrapper.innerHTML = '';
+const clearAllDoneTasks = () => {
+    completedTasksList.innerHTML = ''
+    doneCountSpan.textContent = 0
+    clearAllCompletedWrapper.innerHTML = ''  
+}
+
+const checkClearAllDoneBtn = () => {
+    if (completedTasksList.children.length === 0) {
+        clearAllCompletedWrapper.innerHTML = '';
     }
 }
 
@@ -79,6 +106,9 @@ const toggleTodoStatus = (e) => {
 
             const activeCount = activeCountSpan.textContent
             activeCountSpan.textContent = Number(activeCount) - 1
+            
+            checkFirstDoneTask()
+            checkClearAllActiveBtn()
 
         } else if (status === 'active') {
             activeTasksList.appendChild(li)
@@ -88,6 +118,9 @@ const toggleTodoStatus = (e) => {
 
             const doneCount = doneCountSpan.textContent
             doneCountSpan.textContent = Number(doneCount) - 1
+
+            checkFirstTask()
+            checkClearAllDoneBtn()
         }
 
         const locStorage = getFromLocalStorage()
@@ -136,6 +169,7 @@ const addTodoTask = () => {
     }
 
     checkFirstTask()
+    checkFirstDoneTask()
 }
 
 const createLiElement = (task) => {
