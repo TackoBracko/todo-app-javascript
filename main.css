@@ -56,7 +56,7 @@ header {
     font-size: 1.5rem;
 }
 
-.taskInput {
+.taskInput, .editInput {
     color: #5c5c5c;
     border: 1px solid #335c62;
     border-radius: 8px;
@@ -91,11 +91,33 @@ li {
     padding: 10px;
     border: 2px solid #FFFF;
     border-radius: 20px;
-    background-color: rgb(233, 167, 167);
+    background-color: rgb(230, 97, 97);
     color: #fff;
     font-size: 0.7rem;
 }
 
+.clearAll {
+    padding: 10px;
+    border: 2px solid #FFFF;
+    border-radius: 20px;
+    background-color: rgb(221, 23, 23);
+    color: #fff;
+    font-size: 0.7rem;
+    float: right;
+}
+
+.editBtn {
+    padding: 10px;
+    margin-left: 10px;
+    border: 2px solid #FFFF;
+    border-radius: 20px;
+    background-color: #59a2ad;
+    color: #fff;
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+
 .checkbox {
     margin: 10px;
+    cursor: pointer;
 }
