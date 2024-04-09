@@ -113,21 +113,23 @@ console.log(salaryIncrease100)
 
 //5. Do the same like in task 4 but i want you to mutate the original array.
 
-const salaryIncrease = people.forEach(person => {
+people.forEach(person => {
     if (person.age < 31) {
         person.salary += 100
     }
 })
 
-console.log(salaryIncrease)
+console.log(people)
 
 //6. Create a function called updatePeople that will recieve people parameter, iterate through people array and add "isActive" prop with value of "true".
 //E.G.result
 
 function updatePeople(people) {
-    people.map(person => {
-        return {...person, isActive: true}
-    })
+    return (
+        people.map(person => {
+            return {...person, isActive: true}
+        })
+    )
 }
 
 const peopleResult = updatePeople(people);
