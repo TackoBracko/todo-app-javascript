@@ -182,7 +182,6 @@ const toggleTodoStatus = (e) => {
             })
             localStorage.setItem('todoItem', JSON.stringify(updatedTasks))
         }
-
     }  
 }
 
@@ -289,10 +288,10 @@ completedTasksList.addEventListener('change', toggleTodoStatus)
 completedTasksList.addEventListener('click', (e) => {hasTaskRemovel(e, completedTasksList, removeClearAllCompletedTasksBtn, completedCountSpan)})
 
 inputField.addEventListener('keypress', (e) => {
-    if (e.keyCode === 13) {
-        addTodoTask()
-    }
-})
+    if (e.keyCode === 13 && inputField.value.trim() !== '') {
+            addTodoTask()
+        }
+    })
   
 //LOCAL STORAGE
 
