@@ -6,7 +6,7 @@ const completedTasksList = document.querySelector('.completedTasks')
 const inputField = document.querySelector('.taskInput')
 const submitBtn = document.querySelector('.submitBtn')
 const activeCountSpan = document.querySelector('.activeCount')
-const doneCountSpan = document.querySelector('.doneCount')
+const completedCountSpan = document.querySelector('.doneCount')
 const clearAllActiveWrapper = document.querySelector('.clear-all-active-wrapper')
 const clearAllCompletedWrapper = document.querySelector('.clear-all-completed-wrapper')
 
@@ -21,7 +21,7 @@ const removeTask = (element) => {
     localStorage.setItem('todoItem', JSON.stringify(newLocalStorage))
 }
 
-const handleTasksList = (e, list, removeClearAllTasksBtn, countSpan) => {
+const hasTaskRemovel = (e, list, removeClearAllTasksBtn, countSpan) => {
     if (e.target.dataset.id && e.target.tagName === 'BUTTON') {
         removeTask(e.target)
 
@@ -35,23 +35,6 @@ const handleTasksList = (e, list, removeClearAllTasksBtn, countSpan) => {
         countSpan.textContent = Number(currentCount) - 1
     }
 }
-
-activeTasksList.addEventListener('click', (e) =>{handleTasksList(e, activeTasksList, removeClearAllActiveTasksBtn, activeCountSpan)})
-completedTasksList.addEventListener('click', (e) => {handleTasksList(e, completedTasksList, removeClearAllDoneTasksBtn, doneCountSpan)})
-
-/*activeTasksList.addEventListener('click', (e) => {
-  if (e.target.dataset.id && e.target.tagName === 'BUTTON') {
-    removeTask(e.target)
-    const isActiveTasksListEmpty = isTaskListEmpty(activeTasksList);
-
-    if (isActiveTasksListEmpty) {
-      removeClearAllActiveTasksBtn()
-    }
-
-    const currentCount = activeCountSpan.textContent;
-    activeCountSpan.textContent = Number(currentCount) - 1;
-  }
-})*/
 
 //clear tasks
 //activetaskslist
@@ -68,6 +51,10 @@ const clearAllActiveTasks = () => {
     activeTasksList.innerHTML = ''
     activeCountSpan.textContent = 0
     clearAllActiveWrapper.innerHTML = ''
+
+    const locStorage = getFromLocalStorage()
+    const newLocalStorage = locStorage.filter(task => task.status !== 'active')
+    localStorage.setItem('todoItem', JSON.stringify(newLocalStorage))
 }
 
 const removeClearAllActiveTasksBtn = () => {
@@ -76,13 +63,17 @@ const removeClearAllActiveTasksBtn = () => {
 
 //completedtaskslist
 
-const clearAllDoneTasks = () => {
+const clearAllCompletedTasks = () => {
     completedTasksList.innerHTML = ''
-    doneCountSpan.textContent = 0
+    completedCountSpan.textContent = 0
     clearAllCompletedWrapper.innerHTML = ''
+
+    const locStorage = getFromLocalStorage()
+    const newLocalStorage = locStorage.filter(task => task.status !== 'completed')
+    localStorage.setItem('todoItem', JSON.stringify(newLocalStorage))
 }
 
-const removeClearAllDoneTasksBtn = () => {
+const removeClearAllCompletedTasksBtn = () => {
     clearAllCompletedWrapper.innerHTML = ''
 }
 
@@ -109,13 +100,13 @@ const isTasksListEmpty = (list) => {
 const toggleTodoStatus = (e) => {
     if (e.target.dataset.id && e.target.tagName === 'INPUT') {
         const li = e.target.parentElement
-        const status = e.target.checked ? 'done' : 'active'
+        const status = e.target.checked ? 'completed' : 'active'
         
-        if (status === 'done') {
+        if (status === 'completed') {
             completedTasksList.appendChild(li)
 
-            const doneCount = doneCountSpan.textContent
-            doneCountSpan.textContent = Number(doneCount) + 1
+            const completedCount = completedCountSpan.textContent
+            completedCountSpan.textContent = Number(completedCount) + 1
 
             const activeCount = activeCountSpan.textContent
             activeCountSpan.textContent = Number(activeCount) - 1
@@ -124,9 +115,9 @@ const toggleTodoStatus = (e) => {
 
             if (isFirstDoneTask) {
                 createClearAllTasksBtn (
-                    clearAllDoneTasks,
+                    clearAllCompletedTasks,
                     clearAllCompletedWrapper,
-                    'Clear All Done'
+                    'Clear All Completed'
                 )
             }
 
@@ -142,7 +133,7 @@ const toggleTodoStatus = (e) => {
                     const updatedTask = {
                         title: task.title,
                         id: task.id,
-                        status:'done'
+                        status:'completed'
                     }
                     return updatedTask
                 } else {
@@ -157,8 +148,8 @@ const toggleTodoStatus = (e) => {
             const activeCount = activeCountSpan.textContent
             activeCountSpan.textContent = Number(activeCount) + 1  
 
-            const doneCount = doneCountSpan.textContent
-            doneCountSpan.textContent = Number(doneCount) - 1
+            const completedCount = completedCountSpan.textContent
+            completedCountSpan.textContent = Number(completedCount) - 1
 
             const isFirstActiveTask = isFirstTask(activeTasksList)
 
@@ -173,7 +164,7 @@ const toggleTodoStatus = (e) => {
             const isDoneTasksListEmpty = isTasksListEmpty(completedTasksList)
 
             if (isDoneTasksListEmpty) {
-                removeClearAllDoneTasksBtn()
+                removeClearAllCompletedTasksBtn()
             }
 
             const locStorage = getFromLocalStorage()
@@ -192,20 +183,6 @@ const toggleTodoStatus = (e) => {
             localStorage.setItem('todoItem', JSON.stringify(updatedTasks))
         }
 
-        /*const locStorage = getFromLocalStorage()
-
-        if(!locStorage) {
-            locStorage = []
-        }
-
-        const newLocalStorage = locStorage.map(task => {
-            if (task.id === Number(e.target.dataset.id)) {
-                task.status = status
-                return task
-            }
-            return task 
-        })
-        localStorage.setItem('todoItem', JSON.stringify(newLocalStorage))*/
     }  
 }
 
@@ -254,7 +231,7 @@ const createLiElement = (task) => {
     const checkBox = document.createElement('input')
     checkBox.type = 'checkbox'
     checkBox.classList.add('checkbox')
-    checkBox.checked = task.status === 'done'
+    checkBox.checked = task.status === 'completed'
     checkBox.dataset.id = task.id
     
     newTask.appendChild(checkBox)
@@ -274,34 +251,42 @@ const renderTodoList = () => {
     completedTasksList.innerHTML = ''
 
     let activeCount = 0
-    let doneCount = 0
+    let completedCount = 0
 
     let locStorage = getFromLocalStorage();
     if (!locStorage) {
         locStorage = [];
     }
 
-    locStorage.map((task) => {
+    const activeTasksWrapper = document.createDocumentFragment()
+    const completedTasksWrapper = document.createDocumentFragment()
+
+    locStorage.forEach((task) => {
         const newTask = createLiElement(task)
 
-        if (task.status === 'done') {
-            completedTasksList.appendChild(newTask)
-            doneCount++;
+        if (task.status === 'completed') {
+            completedTasksWrapper.appendChild(newTask)
+            completedCount++;
         } else {
-            activeTasksList.appendChild(newTask)
+            activeTasksWrapper.appendChild(newTask)
             activeCount++;
         }
     })
 
+    activeTasksList.appendChild(activeTasksWrapper)
+    completedTasksList.appendChild(completedTasksWrapper)
+
     activeCountSpan.textContent = activeCount
-    doneCountSpan.textContent = doneCount
+    completedCountSpan.textContent = completedCount
 }
 
 //event listeneres
 
 submitBtn.addEventListener('click', addTodoTask)
 activeTasksList.addEventListener('change', toggleTodoStatus)
+activeTasksList.addEventListener('click', (e) => {hasTaskRemovel(e, activeTasksList, removeClearAllActiveTasksBtn, activeCountSpan)})
 completedTasksList.addEventListener('change', toggleTodoStatus)
+completedTasksList.addEventListener('click', (e) => {hasTaskRemovel(e, completedTasksList, removeClearAllCompletedTasksBtn, completedCountSpan)})
 
 inputField.addEventListener('keypress', (e) => {
     if (e.keyCode === 13) {
@@ -319,6 +304,23 @@ const getFromLocalStorage = () => {
 }
 
 window.onload = () => {
-    getFromLocalStorage()
     renderTodoList()
+
+    const hasActiveTasks = activeTasksList.children.length > 0
+    if(hasActiveTasks) {
+        createClearAllTasksBtn (
+            clearAllActiveTasks,
+            clearAllActiveWrapper,
+            'Clear All Active'
+        )
+    }
+
+    const hasCompletedTasks = completedTasksList.children.length > 0
+    if(hasCompletedTasks) {
+        createClearAllTasksBtn (
+            clearAllCompletedTasks,
+            clearAllCompletedWrapper,
+            'Clear All Completed'
+        )
+    }
 }
