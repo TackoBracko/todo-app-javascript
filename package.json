@@ -1,0 +1,22 @@
+{
+  "name": "todo-app-javascript",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "start_server": "nodemon --delay 500ms app",
+    "start_db": "db/pocketbase serve",
+    "dev": "npm run start_server & npm run start_db"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "eventsource": "^2.0.2",
+    "express": "^4.19.2",
+    "pocketbase": "^0.21.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
