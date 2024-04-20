@@ -194,7 +194,7 @@ const toggleTodoStatus = (e) => {
 
 //function
 
-const addTodoTask = () => {
+const addTodoTask = async () => {
   if (inputField.value.trim() !== '') {
     const task = {
       title: inputField.value,
@@ -259,13 +259,13 @@ const renderTodoList = () => {
   let activeCount = 0;
   let completedCount = 0;
 
+  const activeTasksWrapper = document.createDocumentFragment();
+  const completedTasksWrapper = document.createDocumentFragment();
+
   let locStorage = getFromLocalStorage();
   if (!locStorage) {
     locStorage = [];
   }
-
-  const activeTasksWrapper = document.createDocumentFragment();
-  const completedTasksWrapper = document.createDocumentFragment();
 
   locStorage.forEach((task) => {
     const newTask = createLiElement(task);
@@ -344,3 +344,81 @@ window.onload = () => {
     );
   }
 };
+
+/* 
+Method: GET
+Api: /api/tasks
+if res.status === 200 {
+  returns {
+    data: Array<{
+    id: string;
+    title: string;
+    status: string;
+    created: Date;
+  }>
+  }
+} else {
+  returns {
+    error: string;
+  }
+}
+*/
+
+/* 
+Method: POST
+Api: /api/tasks
+Expects: {
+  title: string;
+  status: string;
+}
+if res.status === 200 {
+  returns {
+    data: {
+    id: string;
+    title: string;
+    status: string;
+    created: Date;
+  }
+  }
+} else {
+  returns {
+    error: string;
+  }
+}
+*/
+
+/* 
+Method: PATCH
+Api: /api/tasks
+Expects: {
+  id: string;
+  title: string;
+  status: string;
+}
+if res.status === 200 {
+  returns {
+    data: {
+    title: string;
+    status: string;
+  }
+  }
+} else {
+  returns {
+    error: string;
+  }
+}
+*/
+
+/* 
+Method: DELETE
+Api: /api/tasks/:id
+if res.status === 200 {
+  returns {
+    data: string;
+  }
+} else {
+  returns {
+    error: string;
+  }
+}
+*/
