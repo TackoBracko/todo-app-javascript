@@ -1,24 +1,38 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Fetch that Pokemon</title>
-        <meta charset="utf-8" />
-        <link rel="stylesheet" a href="main.css"/>
+        <title>ToDO App - JavaScript</title>
+        <meta charset="utf-8">
+        <link rel="stylesheet" a href="main.css">
     </head>
 
-    <body class="container">
-        <h1>Who's that Pokemon</h1>
+    <body>
+        <header>
+            <h1>To-Do List</h1>
+            <span class="date">Date</span>
+            <p>You have <span class="activeCount">0</span> task(s) to do and you have done <span class="doneCount">0</span></p>
+        </header>
 
-        <input class="pokemon_Input" type="text" placeholder="Enter Pokemon name">
+        <main>
+            <input type="text" class="taskInput" placeholder="Enter task">
+            <button class="submitBtn" type="submit"> + </button>
 
-        <p>It's  <span class="pokemon_Name"></span></p>
-        <p><span class="pokemon_height" style="display: none;"></span></p>
-        <p><span class="pokemon_ability" style="display: none;"></span></p>
+            <div>
+                <h2>Tasks to do</h2>
+                <ul class="activeTasks"></ul>
+                <div class="clear-all-active-wrapper"></div>
+            </div>
 
-        <img src="" class="pokemon_Pic"/>
-
-        <button>Get that Pokemon</button>
-
+            <div>
+                <h2>Completed Tasks</h2>
+                <ul class="completedTasks"></ul>
+                <div class="clear-all-completed-wrapper"></div>
+            </div>
+            
+        </main>
+        
         <script src="script.js"></script>
+        <!--<script src="app.js"></script>
+
     </body>
 </html>
