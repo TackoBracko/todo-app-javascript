@@ -46,3 +46,12 @@ button {
     cursor: pointer;
 }
 
+.place_for_errormsg {
+    padding: 10px;
+    border: 1px solid black;
+    border-radius: 8px;
+    background-color:red;
+    color: white;
+    display: none;
+}
+
