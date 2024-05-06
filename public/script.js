@@ -7,12 +7,9 @@ const inputField = document.querySelector('.taskInput');
 const submitBtn = document.querySelector('.submitBtn');
 const activeCountSpan = document.querySelector('.activeCount');
 const completedCountSpan = document.querySelector('.doneCount');
-const clearAllActiveWrapper = document.querySelector(
-  '.clear-all-active-wrapper'
-);
-const clearAllCompletedWrapper = document.querySelector(
-  '.clear-all-completed-wrapper'
-);
+const clearAllActiveWrapper = document.querySelector('.clear-all-active-wrapper');
+const clearAllCompletedWrapper = document.querySelector('.clear-all-completed-wrapper');
+const errorMsg = document.querySelector('.error_message')
 
 //delete task
 
@@ -148,7 +145,9 @@ const toggleTodoStatus = (e) => {
           return task;
         }
       });
+
       localStorage.setItem('todoItem', JSON.stringify(updatedTasks));
+      
     } else if (status === 'active') {
       activeTasksList.appendChild(li);
 
@@ -194,7 +193,7 @@ const toggleTodoStatus = (e) => {
 
 //function
 
-const addTodoTask = async () => {
+const addTodoTask = () => {
   if (inputField.value.trim() !== '') {
     const task = {
       title: inputField.value,
@@ -252,24 +251,26 @@ const createLiElement = (task) => {
   return newTask;
 };
 
-const renderTodoList = () => {
+const renderTodoList = (tasks) => {
   activeTasksList.innerHTML = '';
   completedTasksList.innerHTML = '';
 
   let activeCount = 0;
   let completedCount = 0;
 
+  /*let locStorage = getFromLocalStorage();
+  if (!locStorage) {
+    locStorage = [];
+  }*/
+
   const activeTasksWrapper = document.createDocumentFragment();
   const completedTasksWrapper = document.createDocumentFragment();
 
-  let locStorage = getFromLocalStorage();
-  if (!locStorage) {
-    locStorage = [];
-  }
-
-  locStorage.forEach((task) => {
+  //throw new Error
+  
+  tasks.forEach((task) => {
     const newTask = createLiElement(task);
-
+    
     if (task.status === 'completed') {
       completedTasksWrapper.appendChild(newTask);
       completedCount++;
@@ -278,7 +279,7 @@ const renderTodoList = () => {
       activeCount++;
     }
   });
-
+  
   activeTasksList.appendChild(activeTasksWrapper);
   completedTasksList.appendChild(completedTasksWrapper);
 
@@ -323,27 +324,68 @@ const getFromLocalStorage = () => {
   }
 };
 
-window.onload = () => {
-  renderTodoList();
+window.onload = async () => {
+  //loaders
+  const activeLoader = document.querySelector('.active_loader')
+  activeLoader.style.display = 'flex'
+  const completedLoader = document.querySelector('.completed_loader')
+  completedLoader.style.display = 'flex'
 
-  const hasActiveTasks = activeTasksList.children.length > 0;
-  if (hasActiveTasks) {
-    createClearAllTasksBtn(
-      clearAllActiveTasks,
-      clearAllActiveWrapper,
-      'Clear All Active'
-    );
-  }
+  setTimeout(async () => {
+    
+    try {
+      const response = await fetch ('/api/tasks')
+      
+      if(response.status !== 200) {
+        throw { 
+          text: `Hey, we have some problem fetching tasks. Error ${response.status}`
+        }
+      } 
+      
+      const responseData = await response.json()
+      const tasks = responseData.data
+      renderTodoList(tasks) 
+      console.log(tasks)
+   
+    } catch(error) {
+      let customErr = 'An unexpected error happened'
 
-  const hasCompletedTasks = completedTasksList.children.length > 0;
-  if (hasCompletedTasks) {
-    createClearAllTasksBtn(
-      clearAllCompletedTasks,
-      clearAllCompletedWrapper,
-      'Clear All Completed'
-    );
-  }
-};
+      if(error.text){
+        customErr = error.text
+      } 
+
+      errorMsg.innerText = customErr
+      errorMsg.style.display = 'block'
+
+      console.error('We have error. Error details: ', error)
+    }
+    
+    const hasActiveTasks = activeTasksList.children.length > 0;
+    if (hasActiveTasks) {
+      createClearAllTasksBtn(
+        clearAllActiveTasks,
+        clearAllActiveWrapper,
+        'Clear All Active'
+      );
+    }
+    
+    const hasCompletedTasks = completedTasksList.children.length > 0;
+    if (hasCompletedTasks) {
+      createClearAllTasksBtn(
+        clearAllCompletedTasks,
+        clearAllCompletedWrapper,
+        'Clear All Completed'
+      );
+    }
+
+    activeLoader.style.display = 'none'
+    completedLoader.style.display = 'none'
+    
+  }, 3000)
+  
+}
+
+
 
 /* 
 Method: GET

@@ -19,18 +19,37 @@
     <main>
       <input type="text" class="taskInput" placeholder="Enter task" />
       <button class="submitBtn" type="submit">+</button>
+      <div class="error_message"></div>
 
       <div>
-        <h2>Tasks to do</h2>
+        <div class="tasks_animation_text">
+          <h2>Tasks to do</h2>
+          <div class="loader active_loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+          </div>
+        </div>
+
         <ul class="activeTasks"></ul>
         <div class="clear-all-active-wrapper"></div>
+        
       </div>
-
+      
       <div>
-        <h2>Done Tasks</h2>
+        <div class="tasks_animation_text">
+          <h2>Done Tasks</h2>
+          <div class="loader completed_loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+          </div>
+        </div>
+
         <ul class="completedTasks"></ul>
         <div class="clear-all-completed-wrapper"></div>
       </div>
+      
     </main>
 
     <script src="script.js"></script>
