@@ -79,12 +79,42 @@ li {
 }
     
 .submitBtn {
-    width: 60px;                        
-    height: 50px;
+    width: 60px;
+    font-size: 20px;
+    padding: 10px;
     border: 2px solid #dcdce6;
-    border-radius: 20px;
     background-color: #59a2ad;
+    border-radius: 15px;
     color: #fff;
+    cursor: pointer;
+}
+
+.submitBtn.loading {
+    position: relative;
+    color: transparent;
+}
+
+.submitBtn.loading::after {
+    content: '';
+    position: absolute;
+    top: 25%;
+    left: 30%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    border: 3px solid #FF9900;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .deleteBtn {
@@ -144,12 +174,9 @@ li {
     display: flex;
     justify-content: space-around;
     align-items: center;
-}
-
-.active_loader, .completed_loader {
     display: none;
 }
-  
+
 .dot {
     width: 12px;
     height: 12px;
@@ -184,3 +211,4 @@ li {
         opacity: 1;
     }
 }
+

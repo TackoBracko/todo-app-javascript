@@ -100,6 +100,7 @@ const isTasksListEmpty = (list) => {
   }
 };
 
+
 //toggle status
 
 const toggleTodoStatus = (e) => {
@@ -193,40 +194,82 @@ const toggleTodoStatus = (e) => {
 
 //function
 
-const addTodoTask = () => {
-  if (inputField.value.trim() !== '') {
-    const task = {
-      title: inputField.value,
-      id: Math.random(),
-      status: 'active',
-    };
+const addTodoTask = async () => {
+  submitBtn.classList.add('loading')
+  
+  setTimeout(async () => {
 
-    console.log(task);
-    inputField.value = '';
+    if (inputField.value.trim() !== '') {
+      const task = {
+        title: inputField.value,
+        //id: Math.random(),
+        status: 'active',
+      };
+  
+      console.log(task);
+      inputField.value = '';
 
-    const newTask = createLiElement(task);
-    activeTasksList.appendChild(newTask);
-
-    let locStorage = getFromLocalStorage();
-    if (!locStorage) {
-      locStorage = [];
+      try {
+        const response = await fetch('/api/tasks', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            title: task.title,
+            status: task.status
+          })
+        })
+  
+        if (!response.ok) {
+          throw {
+            text: 'We have some problem to create new task, please try again later'
+          } 
+        }
+  
+        const responseData = await response.json()
+        
+        const newTask = createLiElement(task);
+        activeTasksList.appendChild(newTask);
+    
+        /*let locStorage = getFromLocalStorage();
+        if (!locStorage) {
+          locStorage = [];
+        }
+        locStorage.push(task);
+        localStorage.setItem('todoItem', JSON.stringify(locStorage));*/
+    
+        const currentCount = activeCountSpan.textContent;
+        activeCountSpan.textContent = Number(currentCount) + 1;
+        
+        const isFirstActiveTask = isFirstTask(activeTasksList);
+        
+        if (isFirstActiveTask) {
+          createClearAllTasksBtn(
+            clearAllActiveTasks,
+            clearAllActiveWrapper,
+            'Clear All Active'
+          );
+        }
+      }
+      catch(error) {
+        let customErr = 'There is been error during task creation or during request'
+  
+        if(error.text){
+          customErr = error.text
+        } 
+  
+        errorMsg.innerText = customErr
+        errorMsg.style.display = 'block'
+        submitBtn.classList.remove('loading')
+  
+        console.error('We have error. Error detailss: ', error)
+      }
     }
-    locStorage.push(task);
-    localStorage.setItem('todoItem', JSON.stringify(locStorage));
+    submitBtn.classList.remove('loading')  
+  }, 1000)
 
-    const currentCount = activeCountSpan.textContent;
-    activeCountSpan.textContent = Number(currentCount) + 1;
-  }
-
-  const isFirstActiveTask = isFirstTask(activeTasksList);
-
-  if (isFirstActiveTask) {
-    createClearAllTasksBtn(
-      clearAllActiveTasks,
-      clearAllActiveWrapper,
-      'Clear All Active'
-    );
-  }
 };
 
 const createLiElement = (task) => {
@@ -326,63 +369,59 @@ const getFromLocalStorage = () => {
 
 window.onload = async () => {
   //loaders
-  const activeLoader = document.querySelector('.active_loader')
-  activeLoader.style.display = 'flex'
-  const completedLoader = document.querySelector('.completed_loader')
-  completedLoader.style.display = 'flex'
-
-  setTimeout(async () => {
+  const loaders= document.querySelectorAll('.loader')
+  loaders.forEach((loader) => {
+    loader.style.display = 'flex'
+  })
     
-    try {
-      const response = await fetch ('/api/tasks')
-      
-      if(response.status !== 200) {
-        throw { 
-          text: `Hey, we have some problem fetching tasks. Error ${response.status}`
-        }
-      } 
-      
-      const responseData = await response.json()
-      const tasks = responseData.data
-      renderTodoList(tasks) 
-      console.log(tasks)
-   
-    } catch(error) {
-      let customErr = 'An unexpected error happened'
-
-      if(error.text){
-        customErr = error.text
-      } 
-
-      errorMsg.innerText = customErr
-      errorMsg.style.display = 'block'
-
-      console.error('We have error. Error details: ', error)
-    }
+  try {
+    const response = await fetch ('/api/tasks')
     
-    const hasActiveTasks = activeTasksList.children.length > 0;
-    if (hasActiveTasks) {
-      createClearAllTasksBtn(
-        clearAllActiveTasks,
-        clearAllActiveWrapper,
-        'Clear All Active'
-      );
-    }
+    if(response.status !== 200) {
+      throw { 
+        text: `Hey, we have some problem fetching tasks. Error ${response.status}`
+      }
+    } 
     
-    const hasCompletedTasks = completedTasksList.children.length > 0;
-    if (hasCompletedTasks) {
-      createClearAllTasksBtn(
-        clearAllCompletedTasks,
-        clearAllCompletedWrapper,
-        'Clear All Completed'
-      );
-    }
-
-    activeLoader.style.display = 'none'
-    completedLoader.style.display = 'none'
-    
-  }, 3000)
+    const responseData = await response.json()
+    const tasks = responseData.data
+    renderTodoList(tasks) 
+    console.log(tasks)
   
+  } catch(error) {
+    let customErr = 'An unexpected error happened'
+
+    if(error.text){
+      customErr = error.text
+    } 
+
+    errorMsg.innerText = customErr
+    errorMsg.style.display = 'block'
+
+    console.error('We have error. Error details: ', error)
+  }
+
+  loaders.forEach((loader) => {
+    loader.style.display = 'none'
+  })
+  
+  const hasActiveTasks = activeTasksList.children.length > 0;
+  if (hasActiveTasks) {
+    createClearAllTasksBtn(
+      clearAllActiveTasks,
+      clearAllActiveWrapper,
+      'Clear All Active'
+    );
+  }
+  
+  const hasCompletedTasks = completedTasksList.children.length > 0;
+  if (hasCompletedTasks) {
+    createClearAllTasksBtn(
+      clearAllCompletedTasks,
+      clearAllCompletedWrapper,
+      'Clear All Completed'
+    );
+  }  
 }
 
 
