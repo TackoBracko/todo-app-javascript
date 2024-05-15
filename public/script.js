@@ -13,15 +13,43 @@ const errorMsg = document.querySelector('.error_message')
 
 //delete task
 
-const removeTask = (element) => {
-  element.parentElement.remove();
+const removeTask = async (element) => {
+  try {
+    const response = await fetch(`/api/tasks/${element.dataset.id}`, {
+      method: 'DELETE',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    })
 
-  const locStorage = getFromLocalStorage();
+    if (response.status !== 200) {
+      throw {
+        text: 'Task is not deleted, something went wrong'
+      }
+    }
+
+    const responseData = await response.json()
+    element.parentElement.remove();
+
+  } catch(error) {
+    let customErr = 'Error removing task'
+  
+    if(error.text){
+      customErr = error.text
+    } 
+
+    errorMsg.innerText = customErr
+    errorMsg.style.display = 'block'
+    console.error('We have error. Error detailss: ', error)
+  }
+
+  /*const locStorage = getFromLocalStorage();
   const newLocalStorage = locStorage.filter(
     (task) => task.id !== Number(element.dataset.id)
   );
 
-  localStorage.setItem('todoItem', JSON.stringify(newLocalStorage));
+  localStorage.setItem('todoItem', JSON.stringify(newLocalStorage));*/
 };
 
 const hasTaskRemovel = (e, list, removeClearAllTasksBtn, countSpan) => {
@@ -100,94 +128,133 @@ const isTasksListEmpty = (list) => {
   }
 };
 
-
 //toggle status
 
-const toggleTodoStatus = (e) => {
+const toggleTodoStatus = async (e) => {
   if (e.target.dataset.id && e.target.tagName === 'INPUT') {
     const li = e.target.parentElement;
     const status = e.target.checked ? 'completed' : 'active';
 
-    if (status === 'completed') {
-      completedTasksList.appendChild(li);
+    try {
+      const response = await fetch(`/api/tasks/${e.target.dataset.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: e.target.dataset.id,
+          title: e.target.dataset.title,
+          status: e.target.dataset.status
+        })
+      })
 
-      const completedCount = completedCountSpan.textContent;
-      completedCountSpan.textContent = Number(completedCount) + 1;
-
-      const activeCount = activeCountSpan.textContent;
-      activeCountSpan.textContent = Number(activeCount) - 1;
-
-      const isFirstDoneTask = isFirstTask(completedTasksList);
-
-      if (isFirstDoneTask) {
-        createClearAllTasksBtn(
-          clearAllCompletedTasks,
-          clearAllCompletedWrapper,
-          'Clear All Completed'
-        );
+      if (response.status !== 200) {
+        throw {
+          text: 'We have some problem to toggle tasks, please try again later'
+        } 
       }
 
-      const isActiveTasksListEmpty = isTasksListEmpty(activeTasksList);
-
-      if (isActiveTasksListEmpty) {
-        removeClearAllActiveTasksBtn();
+      const responseData = await response.json()
+      const newToggleTask = {
+        title: responseData.data.title,
+        status: responseData.data.status
       }
+      console.log(responseData)
+      console.log(newToggleTask)
 
-      const locStorage = getFromLocalStorage();
-      const updatedTasks = locStorage.map((task) => {
-        if (task.id === Number(e.target.dataset.id)) {
-          const updatedTask = {
-            title: task.title,
-            id: task.id,
-            status: 'completed',
-          };
-          return updatedTask;
-        } else {
-          return task;
+      if (status === 'completed') {
+        completedTasksList.appendChild(li);
+  
+        const completedCount = completedCountSpan.textContent;
+        completedCountSpan.textContent = Number(completedCount) + 1;
+  
+        const activeCount = activeCountSpan.textContent;
+        activeCountSpan.textContent = Number(activeCount) - 1;
+  
+        const isFirstDoneTask = isFirstTask(completedTasksList);
+  
+        if (isFirstDoneTask) {
+          createClearAllTasksBtn(
+            clearAllCompletedTasks,
+            clearAllCompletedWrapper,
+            'Clear All Completed'
+          );
         }
-      });
-
-      localStorage.setItem('todoItem', JSON.stringify(updatedTasks));
-      
-    } else if (status === 'active') {
-      activeTasksList.appendChild(li);
-
-      const activeCount = activeCountSpan.textContent;
-      activeCountSpan.textContent = Number(activeCount) + 1;
-
-      const completedCount = completedCountSpan.textContent;
-      completedCountSpan.textContent = Number(completedCount) - 1;
-
-      const isFirstActiveTask = isFirstTask(activeTasksList);
-
-      if (isFirstActiveTask) {
-        createClearAllTasksBtn(
-          clearAllActiveTasks,
-          clearAllActiveWrapper,
-          'Clear All Active'
-        );
-      }
-
-      const isDoneTasksListEmpty = isTasksListEmpty(completedTasksList);
-
-      if (isDoneTasksListEmpty) {
-        removeClearAllCompletedTasksBtn();
-      }
-
-      const locStorage = getFromLocalStorage();
-      const updatedTasks = locStorage.map((task) => {
-        if (task.id === Number(e.target.dataset.id)) {
-          const updatedTask = {
-            title: task.title,
-            id: task.id,
-            status: 'active',
-          };
-          return updatedTask;
-        } else {
-          return task;
+  
+        const isActiveTasksListEmpty = isTasksListEmpty(activeTasksList);
+  
+        if (isActiveTasksListEmpty) {
+          removeClearAllActiveTasksBtn();
         }
-      });
-      localStorage.setItem('todoItem', JSON.stringify(updatedTasks));
+  
+        /*const locStorage = getFromLocalStorage();
+        const updatedTasks = locStorage.map((task) => {
+          if (task.id === Number(e.target.dataset.id)) {
+            const updatedTask = {
+              title: task.title,
+              id: task.id,
+              status: 'completed',
+            };
+            return updatedTask;
+          } else {
+            return task;
+          }
+        });
+  
+        localStorage.setItem('todoItem', JSON.stringify(updatedTasks));*/
+        
+      } else if (status === 'active') {
+        activeTasksList.appendChild(li);
+  
+        const activeCount = activeCountSpan.textContent;
+        activeCountSpan.textContent = Number(activeCount) + 1;
+  
+        const completedCount = completedCountSpan.textContent;
+        completedCountSpan.textContent = Number(completedCount) - 1;
+  
+        const isFirstActiveTask = isFirstTask(activeTasksList);
+  
+        if (isFirstActiveTask) {
+          createClearAllTasksBtn(
+            clearAllActiveTasks,
+            clearAllActiveWrapper,
+            'Clear All Active'
+          );
+        }
+  
+        const isDoneTasksListEmpty = isTasksListEmpty(completedTasksList);
+  
+        if (isDoneTasksListEmpty) {
+          removeClearAllCompletedTasksBtn();
+        }
+  
+        /*const locStorage = getFromLocalStorage();
+        const updatedTasks = locStorage.map((task) => {
+          if (task.id === Number(e.target.dataset.id)) {
+            const updatedTask = {
+              title: task.title,
+              id: task.id,
+              status: 'active',
+            };
+            return updatedTask;
+          } else {
+            return task;
+          }
+        });
+        localStorage.setItem('todoItem', JSON.stringify(updatedTasks));*/
+      }
+
+    } catch(error) {
+      let customErr = 'There was an error updating tasks status'
+  
+      if(error.text){
+        customErr = error.text
+      } 
+
+      errorMsg.innerText = customErr
+      errorMsg.style.display = 'block'
+      console.error('We have error. Error detailss: ', error)
     }
   }
 };
@@ -222,15 +289,21 @@ const addTodoTask = async () => {
           })
         })
   
-        if (!response.ok) {
+        if (response.status !== 200) {
           throw {
             text: 'We have some problem to create new task, please try again later'
           } 
         }
   
         const responseData = await response.json()
+        const newResponseTask = {
+          title: responseData.data.title,
+          status: responseData.data.status,
+          id: responseData.data.id
+        }
         
-        const newTask = createLiElement(task);
+        const newTask = createLiElement(newResponseTask);
+        //const newTask = createLiElement(responseData.data);
         activeTasksList.appendChild(newTask);
     
         /*let locStorage = getFromLocalStorage();
